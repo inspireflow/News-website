@@ -1,0 +1,77 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}News Posts{% endblock %}
+{% block breadcrumb %}News Posts{% endblock %}
+{% block heading %}News Management{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>All News Posts</h2>
+            <p>Create, search and manage your articles.</p>
+        </div>
+        <a href="{% url 'dashboard:post_create' %}" class="btn primary">+ Add News</a>
+    </div>
+
+    <form method="get" class="filter-form">
+        <label class="sr-only" for="post-search">Search posts</label>
+        <input id="post-search" type="search" name="q" value="{{ query }}"
+            placeholder="Search titles or summaries">
+        <label class="sr-only" for="post-status">Filter by status</label>
+        <select id="post-status" name="status">
+            <option value="">All statuses</option>
+            <option value="published" {% if status == "published" %}selected{% endif %}>Published</option>
+            <option value="draft" {% if status == "draft" %}selected{% endif %}>Draft</option>
+        </select>
+        <button class="btn secondary" type="submit">Search</button>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>{{ post.title }}</td>
+                    <td>{{ post.category.name|default:"Uncategorized" }}</td>
+                    <td><span class="status {{ post.status }}">{{ post.get_status_display }}</span></td>
+                    <td>{{ post.created_at|date:"d M Y" }}</td>
+                    <td class="actions post-actions">
+                        <a class="action-button action-edit" href="{% url 'dashboard:post_edit' post.pk %}">Edit</a>
+                        <a class="action-button action-delete" href="{% url 'dashboard:post_delete' post.pk %}">Delete</a>
+                        {% if post.status == "published" %}
+                        <a class="action-button action-view" href="{% url 'article' post.slug %}" target="_blank" rel="noopener">View</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No posts found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="table-pagination" aria-label="Post list pages">
+        {% if page_obj.has_previous %}
+        <a href="?q={{ query|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?q={{ query|urlencode }}&amp;status={{ status|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}

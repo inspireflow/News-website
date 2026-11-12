@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description"
+        content="{% block description %}Latest news, breaking stories and in-depth coverage from {{ site_settings.site_name|default:'NewsPortal' }}.{% endblock %}">
+
+    <meta name="theme-color" content="#f5f7fb">
+
+    <title>{% block title %}{{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body id="top">
+
+    <div class="reading-progress" aria-hidden="true"><span></span></div>
+    <a class="skip-link" href="#main-content">
+        Skip to content
+    </a>
+
+    {% include "header.html" %}
+
+    <main id="main-content" class="container page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include "footer.html" %}
+
+    {% block extra_js %}{% endblock %}
+
+    <script src="{% static 'js/main.js' %}" defer></script>
+
+</body>
+
+</html>

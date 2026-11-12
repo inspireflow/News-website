@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Premium subscriptions | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription.css' %}">{% endblock %}
+
+{% block content %}
+<section class="subscription-page">
+    {% if messages %}
+    <div class="subscription-messages" role="status">
+        {% for message in messages %}<p class="{{ message.tags }}">{{ message }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="subscription-heading">
+        <span class="subscription-kicker">SUPPORT INDEPENDENT JOURNALISM</span>
+        <h1>Choose your premium plan</h1>
+        <p>Subscription requests are reviewed manually. Access starts only after an administrator approves your request.</p>
+    </div>
+
+    {% if site_settings.subscription_payment_instructions %}
+    <aside class="subscription-instructions">
+        <strong>Payment and verification instructions</strong>
+        <p>{{ site_settings.subscription_payment_instructions|linebreaksbr }}</p>
+    </aside>
+    {% endif %}
+
+    {% if current_subscription %}
+    <div class="subscription-notice">
+        {% if current_subscription.status == "pending" %}
+        You already have a request awaiting review.
+        {% else %}
+        You currently have an active subscription.
+        {% endif %}
+        <a href="{% url 'subscription_status' %}">View subscription status</a>
+    </div>
+    {% elif request.user.is_authenticated %}
+    <form id="subscription-request-form" method="post" action="{% url 'subscription_request_form' %}" class="subscription-form">
+        {% csrf_token %}
+        <div class="subscription-field">
+            <label for="{{ form.full_name.id_for_label }}">Full name</label>
+            {{ form.full_name }}
+            {{ form.full_name.errors }}
+        </div>
+        <div class="subscription-field">
+            <label for="{{ form.email.id_for_label }}">Email address</label>
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        <div class="subscription-field">
+            <label for="{{ form.plan.id_for_label }}">Plan</label>
+            {{ form.plan }}
+            {{ form.plan.errors }}
+        </div>
+        <div class="subscription-field">
+            <label for="{{ form.payment_mode.id_for_label }}">Payment mode</label>
+            {{ form.payment_mode }}
+            {{ form.payment_mode.errors }}
+        </div>
+        <p class="subscription-small-print">Requests stay pending until reviewed by an administrator.</p>
+        <button class="subscription-button" type="submit">Submit subscription request</button>
+    </form>
+    {% endif %}
+
+    <div class="subscription-plan-grid">
+        {% for plan in plans %}
+        <article class="subscription-card">
+            <span class="subscription-kicker">PREMIUM ACCESS</span>
+            <h2>{{ plan.name }}</h2>
+            {% if plan.description %}<p>{{ plan.description|linebreaksbr }}</p>{% endif %}
+            <p class="subscription-price">
+                {{ plan.price|floatformat:2 }}{% if plan.currency %} {{ plan.currency }}{% endif %}
+            </p>
+            <p class="subscription-duration">{{ plan.duration_days }} days</p>
+            {% if current_subscription %}
+            <a class="subscription-button subscription-button-muted" href="{% url 'subscription_status' %}">View status</a>
+            {% elif request.user.is_authenticated %}
+            <a class="subscription-button" href="{% url 'subscription_plans' %}?plan={{ plan.pk }}#subscription-request-form">Choose this plan</a>
+            {% else %}
+            <a class="subscription-button" href="{% url 'account_login' %}?next={% url 'subscription_plans' %}%3Fplan%3D{{ plan.pk }}">Sign in to request</a>
+            {% endif %}
+        </article>
+        {% empty %}
+        <div class="subscription-empty">
+            <h2>No plans are available yet</h2>
+            <p>Please check back later. Subscription plans are configured by the website administrator.</p>
+        </div>
+        {% endfor %}
+    </div>
+    <p class="subscription-disclaimer">Requests remain pending until reviewed. Clicking a request button does not activate a subscription or verify a payment.</p>
+</section>
+{% endblock %}

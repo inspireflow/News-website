@@ -1,0 +1,84 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Analytics{% endblock %}
+{% block breadcrumb %}Analytics{% endblock %}
+{% block heading %}Analytics{% endblock %}
+
+{% block content %}
+<section class="analytics-toolbar panel">
+    <div><h2>Performance overview</h2><p>Charts use recorded posts and page-view data.</p></div>
+    <div class="range-controls" role="group" aria-label="Views chart date range">
+        <button type="button" data-chart-range="7d" aria-pressed="false">7 days</button>
+        <button type="button" data-chart-range="30d" aria-pressed="true">30 days</button>
+        <button type="button" data-chart-range="12m" aria-pressed="false">12 months</button>
+    </div>
+</section>
+
+<section class="stat-grid analytics-stat-grid" aria-label="Analytics summary">
+    <div class="stat-card"><span class="stat-label">Articles</span><strong data-counter="{{ chart_data.goals.articles.value }}" data-value="{{ chart_data.goals.articles.value }}">{{ chart_data.goals.articles.value }}</strong>
+        <small>This month · goal {{ chart_data.goals.articles.target }}</small><div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="posts" aria-label="12 month article trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div></div>
+    <div class="stat-card"><span class="stat-label">Page views</span><strong data-counter="{{ chart_data.goals.views.value }}" data-value="{{ chart_data.goals.views.value }}">{{ chart_data.goals.views.value }}</strong>
+        <small>This month · goal {{ chart_data.goals.views.target }}</small><div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="views" aria-label="7 day page-view trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div></div>
+    <div class="stat-card"><span class="stat-label">Performance index</span><strong data-counter="{{ chart_data.performance }}" data-value="{{ chart_data.performance }}">{{ chart_data.performance }}</strong>
+        <small>Against illustrative monthly goals</small><div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="published" aria-label="12 month published article trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div></div>
+</section>
+
+<section class="chart-grid analytics-chart-grid">
+    <article class="chart-card chart-card-wide">
+        <div class="chart-card-heading"><div><h2>Views over time</h2><p>Switch between daily and monthly totals</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-views" aria-label="Export views chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap chart-canvas-large"><canvas id="analytics-views" aria-label="Page views over time area chart"></canvas></div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Articles by category</h2><p>Article count by category</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-categories" aria-label="Export categories chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="analytics-categories" aria-label="Articles by category doughnut chart"></canvas></div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Monthly goals</h2><p>Illustrative targets: 20 articles, 1,000 views</p></div></div>
+        <div class="goal-rings">
+            <div class="goal-ring" data-goal-ring="articles"><div><strong data-goal-value>0</strong><span>of {{ chart_data.goals.articles.target }} articles</span></div></div>
+            <div class="goal-ring goal-ring-blue" data-goal-ring="views"><div><strong data-goal-value>0</strong><span>of {{ chart_data.goals.views.target }} views</span></div></div>
+        </div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Articles per author</h2><p>Article counts from saved posts</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-authors" aria-label="Export authors chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="analytics-authors" aria-label="Articles per author rounded bar chart"></canvas></div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Top 5 most-read</h2><p>Published articles by recorded views</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-popular" aria-label="Export popular articles chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="analytics-popular" aria-label="Top five most-read articles chart"></canvas></div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Category performance</h2><p>Compare article totals and views</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-radar" aria-label="Export category performance chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="analytics-radar" aria-label="Category performance radar chart"></canvas></div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Traffic source split</h2><p>Illustrative sample — referrers are not stored</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-traffic" aria-label="Export traffic source chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="analytics-traffic" aria-label="Sample traffic source polar area chart"></canvas></div>
+        <p class="sample-note">Sample only. Connect this to stored referrer/UTM data to show actual sources.</p>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Publishing activity</h2><p>Posts created per day · last 12 weeks</p></div></div>
+        <div class="activity-calendar" id="activity-calendar" aria-label="Publishing activity calendar"></div>
+        <div class="activity-legend"><span>Fewer</span><i></i><i></i><i></i><i></i><span>More</span></div>
+    </article>
+    <article class="chart-card">
+        <div class="chart-card-heading"><div><h2>Performance index</h2><p>Average progress against the illustrative goals above</p></div>
+            <button class="chart-export" type="button" data-export-chart="analytics-performance" aria-label="Export performance chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="analytics-performance" aria-label="Performance index gauge"></canvas></div>
+        <p class="gauge-value"><strong>{{ chart_data.performance }}%</strong> of combined monthly benchmark</p>
+    </article>
+</section>
+{{ chart_data|json_script:"dashboard-chart-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+<script src="{% static 'js/dashboard-charts.js' %}" defer></script>
+{% endblock %}

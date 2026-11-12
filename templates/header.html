@@ -1,0 +1,112 @@
+{% load static %}
+
+<header class="site-header">
+    <!-- Top information strip -->
+    <div class="top-strip">
+        <div class="container top-strip-inner">
+            <span class="top-date">
+                <span class="status-dot"></span>
+                Your daily news briefing
+            </span>
+            <span class="top-tagline">
+                {{ site_settings.tagline|default:"Stories that matter." }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Main masthead -->
+    <div class="masthead">
+        <div class="container masthead-inner">
+
+            <button class="mobile-menu-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false"
+                aria-controls="primary-navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <a class="logo" href="{% url 'home' %}" aria-label="Go to homepage">
+                {% if site_settings and site_settings.logo %}
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name|default:'NewsPortal' }}">
+                {% else %}
+                <span class="logo-name">
+                    {{ site_settings.site_name|default:"NewsPortal" }}
+                </span>
+                {% endif %}
+            </a>
+
+            <div class="masthead-caption">
+                <span class="masthead-eyebrow">INDEPENDENT JOURNALISM</span>
+                <span class="masthead-description">
+                    News, insight and perspective.
+                </span>
+            </div>
+
+            <div class="search-wrap">
+                <form class="search-form" id="news-search-form" role="search" action="{% url 'search' %}" method="get"
+                    data-suggestions-url="{% url 'search_suggestions' %}">
+
+                    <label class="sr-only" for="news-search-input">
+                        Search news
+                    </label>
+
+                    <input type="search" id="news-search-input" name="q" placeholder="Search stories..."
+                        autocomplete="off" aria-label="Search news" aria-controls="search-results"
+                        aria-expanded="false" value="{{ request.GET.q }}">
+
+                    <button type="submit" aria-label="Search">
+                        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <circle cx="10.8" cy="10.8" r="6.8"></circle>
+                            <path d="m16 16 4.5 4.5"></path>
+                        </svg>
+                    </button>
+                </form>
+
+                <div id="search-results" class="search-results" role="listbox" aria-label="Search suggestions" hidden>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Primary navigation -->
+    <nav class="nav-bar" id="primary-navigation" aria-label="Main navigation">
+        <div class="container nav-inner">
+
+            <div class="nav-links">
+                <a class="nav-link nav-home" href="{% url 'home' %}">
+                    <span class="nav-home-icon" aria-hidden="true">⌂</span>
+                    <span>Home</span>
+                </a>
+
+                {% for category in categories %}
+                <a class="nav-link" href="{% url 'category' category.slug %}">
+                    {{ category.name }}
+                </a>
+                {% endfor %}
+
+                <a class="nav-link" href="{% url 'about' %}">
+                    About
+                </a>
+
+                <a class="nav-link" href="{% url 'subscription_plans' %}">
+                    Subscriptions
+                </a>
+                {% if request.user.is_authenticated %}
+                <a class="nav-link" href="{% url 'subscription_status' %}">
+                    My Subscription
+                </a>
+                {% endif %}
+            </div>
+
+            <a class="nav-latest" href="{% url 'home' %}">
+                Latest Stories
+                <span aria-hidden="true">↗</span>
+            </a>
+            <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark theme">
+                <span aria-hidden="true">◐</span>
+                <span data-theme-label>Dark mode</span>
+            </button>
+        </div>
+    </nav>
+</header>

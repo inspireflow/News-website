@@ -1,0 +1,111 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Subscription #{{ subscription.pk }}{% endblock %}
+{% block breadcrumb %}Subscriptions / Request #{{ subscription.pk }}{% endblock %}
+{% block heading %}Subscription Request{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription-dashboard.css' %}">{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Request #{{ subscription.pk }} — {{ subscription.plan_name }}</h2>
+            <p>Submitted {{ subscription.requested_at|date:"d M Y H:i" }}</p>
+        </div>
+        <span class="status {{ subscription.status }}">{{ subscription.get_status_display }}</span>
+    </div>
+    <div class="subscription-detail-grid">
+        <p><strong>Subscriber</strong><br>{{ subscription.full_name|default:subscription.user.get_full_name|default:subscription.user.username }}</p>
+        <p><strong>Email</strong><br><a href="mailto:{{ subscription.email|default:subscription.user.email }}">{{ subscription.email|default:subscription.user.email|default:"Not provided" }}</a></p>
+        <p><strong>Plan price</strong><br>{{ subscription.price|floatformat:2 }}{% if subscription.currency %} {{ subscription.currency }}{% endif %}</p>
+        <p><strong>Duration</strong><br>{{ subscription.duration_days }} days</p>
+        <p><strong>Payment mode</strong><br>{{ subscription.get_payment_mode_display }}</p>
+        <p><strong>Payment / verification reference</strong><br>{{ subscription.payment_reference|default:"Not provided" }}</p>
+        <p><strong>Start date</strong><br>{{ subscription.starts_at|date:"d M Y H:i"|default:"—" }}</p>
+        <p><strong>Expiry date</strong><br>{{ subscription.expires_at|date:"d M Y H:i"|default:"—" }}</p>
+        <p><strong>Days remaining</strong><br>{{ subscription.days_remaining_text }}</p>
+        {% if subscription.approved_by %}<p><strong>Approved by</strong><br>{{ subscription.approved_by }} · {{ subscription.approved_at|date:"d M Y H:i" }}</p>{% endif %}
+        {% if subscription.rejected_by %}<p><strong>Rejected by</strong><br>{{ subscription.rejected_by }} · {{ subscription.rejected_at|date:"d M Y H:i" }}{% if subscription.rejection_reason %}<br>{{ subscription.rejection_reason }}{% endif %}</p>{% endif %}
+        {% if subscription.cancelled_by %}<p><strong>Cancelled by</strong><br>{{ subscription.cancelled_by }} · {{ subscription.cancelled_at|date:"d M Y H:i" }}{% if subscription.cancellation_reason %}<br>{{ subscription.cancellation_reason }}{% endif %}</p>{% endif %}
+    </div>
+
+    {% if subscription.status == "pending" %}
+    <div class="subscription-admin-actions">
+        <form method="post" action="{% url 'dashboard:subscription_action' subscription.pk 'approve' %}">
+            {% csrf_token %}
+            <button class="btn primary" type="submit">Approve request</button>
+        </form>
+        <form method="post" action="{% url 'dashboard:subscription_action' subscription.pk 'reject' %}" onsubmit="return confirm('Reject this subscription request?');">
+            {% csrf_token %}
+            <label for="rejection-reason">Reason (optional)</label>
+            <textarea id="rejection-reason" name="reason" rows="2" maxlength="1000"></textarea>
+            <button class="btn danger" type="submit">Reject request</button>
+        </form>
+    </div>
+    {% elif subscription.status == "active" %}
+    <form class="subscription-admin-actions" method="post" action="{% url 'dashboard:subscription_schedule_expiry' subscription.pk %}">
+        {% csrf_token %}
+        <label for="{{ expiry_form.expires_on.id_for_label }}">Schedule expiry</label>
+        {{ expiry_form.expires_on }}
+        {{ expiry_form.expires_on.errors }}
+        <button class="btn secondary" type="submit">Update expiry date</button>
+    </form>
+    <form class="subscription-admin-actions" method="post" action="{% url 'dashboard:subscription_action' subscription.pk 'cancel' %}" onsubmit="return confirm('Cancel this active subscription now?');">
+        {% csrf_token %}
+        <label for="cancellation-reason">Cancellation reason (optional)</label>
+        <textarea id="cancellation-reason" name="reason" rows="2" maxlength="1000"></textarea>
+        <button class="btn danger" type="submit">Cancel subscription</button>
+    </form>
+    {% endif %}
+</section>
+
+<section class="panel">
+    <div class="panel-heading"><div><h2>Audit history</h2><p>Recorded request and administrator actions.</p></div></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Date</th><th>Event</th><th>From</th><th>To</th><th>Actor</th><th>Reason</th></tr></thead>
+            <tbody>
+                {% for event in subscription.events.all %}
+                <tr>
+                    <td>{{ event.occurred_at|date:"d M Y H:i" }}</td>
+                    <td>{{ event.get_event_display }}</td>
+                    <td>{{ event.from_status|default:"—" }}</td>
+                    <td>{{ event.to_status|default:"—" }}</td>
+                    <td>{{ event.actor|default:"System" }}</td>
+                    <td>{{ event.reason|default:"—" }}</td>
+                </tr>
+                {% empty %}<tr><td colspan="6">No audit events recorded.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-heading"><div><h2>Email notifications</h2><p>Delivery status and available retry action.</p></div></div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Event</th><th>Recipient</th><th>Status</th><th>Attempts</th><th>Last error</th><th>Action</th></tr></thead>
+            <tbody>
+                {% for delivery in subscription.email_deliveries.all %}
+                <tr>
+                    <td>{{ delivery.event|title }}</td>
+                    <td>{{ delivery.recipient|default:"Not configured" }}</td>
+                    <td>{{ delivery.get_status_display }}</td>
+                    <td>{{ delivery.attempts }}</td>
+                    <td>{{ delivery.last_error|default:"—" }}</td>
+                    <td>
+                        {% if delivery.status == "failed" %}
+                        <form method="post" action="{% url 'dashboard:subscription_email_retry' delivery.pk %}">
+                            {% csrf_token %}<button class="btn secondary" type="submit">Retry</button>
+                        </form>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% empty %}<tr><td colspan="6">No notification emails recorded.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<a class="btn secondary" href="{% url 'dashboard:subscriptions' %}">Back to subscriptions</a>
+{% endblock %}

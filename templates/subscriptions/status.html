@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My subscriptions | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription.css' %}">{% endblock %}
+
+{% block content %}
+<section class="subscription-page">
+    {% if messages %}
+    <div class="subscription-messages" role="status">
+        {% for message in messages %}<p class="{{ message.tags }}">{{ message }}</p>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="subscription-heading">
+        <span class="subscription-kicker">YOUR ACCOUNT</span>
+        <h1>My subscriptions</h1>
+        <p>Review request decisions and subscription dates.</p>
+    </div>
+    <div class="subscription-status-actions">
+        <a class="subscription-button" href="{% url 'subscription_plans' %}">Browse plans</a>
+        <form method="post" action="{% url 'account_logout' %}">
+            {% csrf_token %}
+            <button class="subscription-button subscription-button-muted" type="submit">Sign out</button>
+        </form>
+    </div>
+    <div class="subscription-history">
+        {% for subscription in subscriptions %}
+        <article class="subscription-card">
+            <div class="subscription-history-heading">
+                <div>
+                    <h2>{{ subscription.plan_name }}</h2>
+                    <p>Request #{{ subscription.pk }} · {{ subscription.requested_at|date:"d M Y H:i" }}</p>
+                </div>
+                <span class="subscription-status subscription-status-{{ subscription.status }}">{{ subscription.get_status_display }}</span>
+            </div>
+            <p class="subscription-price">{{ subscription.price|floatformat:2 }}{% if subscription.currency %} {{ subscription.currency }}{% endif %}</p>
+            <p>Name: {{ subscription.full_name|default:request.user.get_full_name|default:request.user.username }}</p>
+            <p>Email: {{ subscription.email|default:request.user.email }}</p>
+            <p>Payment mode: {{ subscription.get_payment_mode_display }}</p>
+            {% if subscription.status == "pending" %}<p>Waiting for admin approval</p>{% endif %}
+            {% if subscription.starts_at %}<p>Starts: {{ subscription.starts_at|date:"d M Y H:i" }}</p>{% endif %}
+            {% if subscription.expires_at %}<p>Expires: {{ subscription.expires_at|date:"d M Y H:i" }}</p>{% endif %}
+            <p>Days remaining: {{ subscription.days_remaining_text }}</p>
+            {% if subscription.rejection_reason %}<p>Decision note: {{ subscription.rejection_reason }}</p>{% endif %}
+            {% if subscription.cancellation_reason %}<p>Cancellation note: {{ subscription.cancellation_reason }}</p>{% endif %}
+            {% if subscription.status == "active" %}
+            <form method="post" action="{% url 'subscription_cancel' subscription.pk %}" onsubmit="return confirm('Cancel this subscription now? Your access will stop immediately.');">
+                {% csrf_token %}
+                <button class="subscription-button subscription-button-muted" type="submit">Cancel subscription</button>
+            </form>
+            {% elif subscription.status == "expired" or subscription.status == "cancelled" or subscription.status == "rejected" %}
+            <a class="subscription-button" href="{% url 'subscription_plans' %}">Subscribe again</a>
+            {% endif %}
+        </article>
+        {% empty %}
+        <div class="subscription-empty">
+            <h2>No subscription requests yet</h2>
+            <p>Choose a plan to send a request for administrator review.</p>
+            <a class="subscription-button" href="{% url 'subscription_plans' %}">View plans</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

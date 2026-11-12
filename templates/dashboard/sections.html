@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Homepage Sections{% endblock %}
+{% block breadcrumb %}Homepage Sections{% endblock %}
+{% block heading %}Homepage Sections{% endblock %}
+
+{% block content %}
+<div class="dashboard-columns">
+    <section class="panel">
+        <h2>Add Section</h2>
+        <p>Example: Trending News, Latest News, Editor's Picks.</p>
+
+        <form method="post" action="{% url 'dashboard:section_create' %}" class="dashboard-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+            </div>
+            {% endfor %}
+            <button class="btn primary" type="submit">Create Section</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Existing Sections</h2>
+        {% for section in sections %}
+        <div class="list-row">
+            <div>
+                <strong>{{ section.title }}</strong>
+                <small>Order: {{ section.order }} · {% if section.is_active %}Active{% else %}Hidden{% endif %}</small>
+            </div>
+            <div class="actions">
+                <a href="{% url 'dashboard:section_edit' section.pk %}">Edit</a>
+                <a href="{% url 'dashboard:section_delete' section.pk %}">Delete</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No sections created yet.</p>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

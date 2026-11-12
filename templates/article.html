@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ post.title }} | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+
+{% block description %}{{ post.summary|default:post.title }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription.css' %}">{% endblock %}
+
+{% block content %}
+
+<!-- Article breadcrumb -->
+<div class="article-breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span aria-hidden="true">/</span>
+    <a href="{% url 'category' post.category.slug %}">
+        {{ post.category.name }}
+    </a>
+    <span aria-hidden="true">/</span>
+    <span class="breadcrumb-current">Article</span>
+</div>
+
+
+<!-- Main article -->
+<article class="article-page">
+
+    <header class="article-header">
+        <div class="article-overline">
+            <span class="article-overline-line"></span>
+            <a class="story-category" href="{% url 'category' post.category.slug %}">
+                {{ post.category.name }}
+            </a>
+            {% if post.is_premium %}<span class="subscription-premium-label">Premium</span>{% endif %}
+        </div>
+
+        <h1 class="article-title">{{ post.title }}</h1>
+
+        {% if post.summary %}
+        <p class="article-summary">{{ post.summary }}</p>
+        {% endif %}
+
+        <div class="article-byline">
+            <div class="article-author-mark" aria-hidden="true">
+                {{ post.author|default:"E"|slice:":1"|upper }}
+            </div>
+
+            <div class="article-author-details">
+                <span class="article-author-name">
+                    {{ post.author|default:"Editorial Team" }}
+                </span>
+                <span class="article-published-date">
+                    Published
+                    <time datetime="{{ post.created_at|date:'c' }}">
+                        {{ post.created_at|date:"d F Y" }}
+                    </time>
+                </span>
+                <span class="article-read-time" data-read-time>Calculating reading time…</span>
+            </div>
+
+            <nav class="article-share" aria-label="Share this article">
+                <span>Share</span>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri|urlencode }}"
+                    target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook">Facebook</a>
+                <a href="https://wa.me/?text={{ post.title|urlencode }}%20{{ request.build_absolute_uri|urlencode }}"
+                    target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp">WhatsApp</a>
+                <button type="button" data-copy-link>Copy link</button>
+            </nav>
+        </div>
+    </header>
+
+
+    <!-- Featured image -->
+    {% if post.image %}
+    <figure class="article-featured-media">
+        <img class="article-image" src="{{ post.image.url }}" alt="{{ post.title }}" fetchpriority="high">
+        <figcaption class="article-image-caption">
+            {{ post.title }}
+        </figcaption>
+    </figure>
+    {% endif %}
+
+
+    <!-- Article body -->
+    <div class="article-layout">
+        <div class="article-content">
+            {{ post.content|linebreaks }}
+            {% if not has_premium_access %}
+            <section class="subscription-lock" aria-labelledby="subscription-lock-title">
+                <span class="subscription-lock-kicker">PREMIUM STORY</span>
+                <h2 id="subscription-lock-title">Unlock the Full Story</h2>
+                {% if latest_subscription.status == "pending" %}
+                <p>Your subscription request is awaiting administrator approval.</p>
+                {% elif latest_subscription.status == "rejected" %}
+                <p>Your latest subscription request was not approved. You can submit a new request.</p>
+                {% elif latest_subscription.status == "expired" %}
+                <p>Your subscription has expired. Choose a plan to restore premium access.</p>
+                {% elif latest_subscription.status == "cancelled" %}
+                <p>Your subscription was cancelled. Choose a plan to request access again.</p>
+                {% else %}
+                <p>This premium article is available in full to readers with an approved, active subscription.</p>
+                {% endif %}
+                <div class="subscription-lock-actions">
+                    <a class="subscription-button" href="{% url 'subscription_plans' %}">Subscribe Now</a>
+                    {% if request.user.is_authenticated %}
+                    <a class="subscription-text-link" href="{% url 'subscription_status' %}">View request status</a>
+                    {% else %}
+                    <a class="subscription-text-link" href="{% url 'account_login' %}?next={% url 'subscription_plans' %}">Sign in</a>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+
+        <aside class="article-sidebar">
+            <span class="article-sidebar-kicker">IN THIS STORY</span>
+            <h2>{{ post.category.name }}</h2>
+            <p>
+                Explore more reporting and stories from this category.
+            </p>
+            <a class="story-read-link" href="{% url 'category' post.category.slug %}">
+                <span>Explore category</span>
+                <span class="story-arrow" aria-hidden="true">↗</span>
+            </a>
+        </aside>
+    </div>
+
+    <div class="article-end-mark" aria-label="End of article">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+</article>
+
+
+<!-- More stories -->
+<section class="editorial-section article-more-news">
+    <div class="editorial-heading">
+        <div class="editorial-heading-main">
+            <span class="editorial-kicker">KEEP READING</span>
+            <h2>More Stories</h2>
+            <p class="editorial-subtitle">
+                More updates from the newsroom.
+            </p>
+        </div>
+
+        <span class="editorial-heading-mark" aria-hidden="true">/</span>
+    </div>
+
+    <div class="editorial-grid">
+        {% for item in latest %}
+        <article class="editorial-card">
+
+            <a class="editorial-card-image" href="{% url 'article' item.slug %}" aria-label="Read {{ item.title }}">
+
+                {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.title }}" loading="lazy">
+                {% else %}
+                <div class="image-placeholder">
+                    <span>NEWS</span>
+                </div>
+                {% endif %}
+            </a>
+
+            <div class="editorial-card-content">
+                <a class="story-category" href="{% url 'category' item.category.slug %}">
+                    {{ item.category.name }}
+                </a>
+
+                <h3 class="editorial-card-title">
+                    <a href="{% url 'article' item.slug %}">
+                        {{ item.title }}
+                    </a>
+                </h3>
+
+                {% if item.summary %}
+                <p class="editorial-card-summary">
+                    {{ item.summary|truncatewords:20 }}
+                </p>
+                {% endif %}
+
+                <div class="story-meta">
+                    <time datetime="{{ item.created_at|date:'c' }}">
+                        {{ item.created_at|date:"d M Y" }}
+                    </time>
+                </div>
+            </div>
+
+        </article>
+        {% empty %}
+        <div class="news-empty-state">
+            <span class="news-empty-mark">/</span>
+            <h3>More stories coming soon.</h3>
+            <p>Check back for more updates from the newsroom.</p>
+            <a class="story-read-link" href="{% url 'home' %}">
+                <span>Back to homepage</span>
+                <span class="story-arrow" aria-hidden="true">↗</span>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

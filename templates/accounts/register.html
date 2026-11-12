@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create account | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription.css' %}">{% endblock %}
+
+{% block content %}
+<section class="subscription-page account-page">
+    <div class="subscription-heading">
+        <span class="subscription-kicker">YOUR ACCOUNT</span>
+        <h1>Create an account</h1>
+        <p>Create an account to submit a subscription request.</p>
+    </div>
+    <div class="subscription-card account-card">
+        <form method="post" class="subscription-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {{ form.non_field_errors }}
+            {% for field in form %}
+            <div class="subscription-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+                {{ field.errors }}
+            </div>
+            {% endfor %}
+            <button class="subscription-button" type="submit">Create account</button>
+        </form>
+        <p class="subscription-account-link">Already registered? <a href="{% url 'account_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Sign in</a></p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Overview{% endblock %}
+{% block breadcrumb %}Overview{% endblock %}
+{% block heading %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<section class="stat-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Posts</span>
+        <strong data-counter="{{ total_posts }}" data-value="{{ total_posts }}">{{ total_posts }}</strong>
+        <small>All saved news articles</small>
+        <div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="posts" aria-label="12 month article trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Published</span>
+        <strong data-counter="{{ published_posts }}" data-value="{{ published_posts }}">{{ published_posts }}</strong>
+        <small>Live on your website</small>
+        <div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="published" aria-label="Published articles by creation month"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Drafts</span>
+        <strong data-counter="{{ draft_posts }}" data-value="{{ draft_posts }}">{{ draft_posts }}</strong>
+        <small>Not publicly visible</small>
+        <div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="drafts" aria-label="Draft articles by creation month"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Page Views Today</span>
+        <strong data-counter="{{ today_views }}" data-value="{{ today_views }}">{{ today_views }}</strong>
+        <small>Recorded public page requests</small>
+        <div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="views" aria-label="7 day page-view trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Views — 7 Days</span>
+        <strong data-counter="{{ week_views }}" data-value="{{ week_views }}">{{ week_views }}</strong>
+        <small>Last seven calendar days</small>
+        <div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="views" aria-label="7 day page-view trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Categories / Sections</span>
+        <strong class="stat-multiple">
+            <span data-counter="{{ total_categories }}" data-value="{{ total_categories }}">{{ total_categories }}</span>
+            <span aria-hidden="true">/</span>
+            <span data-counter="{{ total_sections }}" data-value="{{ total_sections }}">{{ total_sections }}</span>
+        </strong>
+        <small>Content organization</small>
+        <div class="stat-sparkline-wrap"><canvas class="stat-sparkline" data-sparkline="sample" aria-label="Illustrative content activity trend"></canvas><span class="sparkline-sample" data-sparkline-sample hidden>Sample trend</span></div>
+    </div>
+</section>
+
+<div class="chart-grid overview-chart-grid">
+    <section class="chart-card">
+        <div class="chart-card-heading"><div><h2>Views over time</h2><p>Recorded page requests</p></div>
+            <div class="chart-heading-actions"><a class="chart-link" href="{% url 'dashboard:analytics' %}">Full analytics</a>
+                <button class="chart-export" type="button" data-export-chart="overview-views" aria-label="Export views chart as PNG">↓</button></div></div>
+        <div class="chart-canvas-wrap"><canvas id="overview-views" aria-label="Views over time line chart"></canvas></div>
+    </section>
+    <section class="chart-card">
+        <div class="chart-card-heading"><div><h2>Articles by category</h2><p>Current post distribution</p></div>
+            <button class="chart-export" type="button" data-export-chart="overview-categories" aria-label="Export categories chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="overview-categories" aria-label="Articles by category doughnut chart"></canvas></div>
+    </section>
+    <section class="chart-card">
+        <div class="chart-card-heading"><div><h2>Articles by author</h2><p>Saved articles per author</p></div>
+            <button class="chart-export" type="button" data-export-chart="overview-authors" aria-label="Export authors chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="overview-authors" aria-label="Articles per author bar chart"></canvas></div>
+    </section>
+    <section class="chart-card">
+        <div class="chart-card-heading"><div><h2>Most-read articles</h2><p>Published stories, ranked by views</p></div>
+            <button class="chart-export" type="button" data-export-chart="overview-popular" aria-label="Export popular articles chart as PNG">↓</button></div>
+        <div class="chart-canvas-wrap"><canvas id="overview-popular" aria-label="Most-read articles horizontal bar chart"></canvas></div>
+    </section>
+</div>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Traffic Analytics</h2>
+            <p>Daily page views for the last seven days</p>
+        </div>
+        <span class="pill">Database tracking</span>
+    </div>
+
+    <div class="chart">
+        {% for item in chart %}
+        <div class="chart-column">
+            <div class="chart-value">{{ item.views }}</div>
+            <div class="chart-track">
+                <div class="chart-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+                    aria-valuenow="{{ item.percent|default:0 }}" aria-label="{{ item.views }} page views">
+                    <span style="--bar-height: {{ item.percent|default:0 }}%"></span>
+                </div>
+            </div>
+            <strong>{{ item.label }}</strong>
+            <small>{{ item.date }}</small>
+        </div>
+        {% endfor %}
+
+    </div>
+</section>
+
+<div class="dashboard-columns">
+    <section class="panel overview-popular-list">
+        <div class="panel-heading">
+            <div>
+                <h2>Popular Articles</h2>
+                <p>Ranked by recorded page views</p>
+            </div>
+        </div>
+
+        {% for post in popular_posts %}
+        <div class="list-row">
+            <div>
+                <strong>{{ post.title }}</strong>
+                <small>{{ post.category.name }}</small>
+            </div>
+            <span class="view-count">{{ post.views }} views</span>
+        </div>
+        {% empty %}
+        <p>No article views recorded yet.</p>
+        {% endfor %}
+    </section>
+
+    <section class="panel overview-recent-list">
+        <div class="panel-heading">
+            <div>
+                <h2>Recent News</h2>
+                <p>Latest saved posts</p>
+            </div>
+            <a href="{% url 'dashboard:post_create' %}" class="btn primary">+ Add</a>
+        </div>
+
+        {% for post in recent_posts %}
+        <div class="list-row recent-news-row">
+            <div>
+                <strong>{{ post.title }}</strong>
+                <small>{{ post.category.name }}</small>
+            </div>
+            <div class="actions">
+                <a class="action-button action-edit" href="{% url 'dashboard:post_edit' post.pk %}">Edit</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No posts created yet.</p>
+        {% endfor %}
+    </section>
+</div>
+
+<div class="quick-actions">
+    <a href="{% url 'dashboard:post_create' %}" class="btn primary">+ Create News</a>
+    <a href="{% url 'dashboard:categories' %}" class="btn secondary">Manage Categories</a>
+    <a href="{% url 'dashboard:sections' %}" class="btn secondary">Manage Sections</a>
+    <a href="{% url 'dashboard:settings' %}" class="btn secondary">Website Settings</a>
+</div>
+{{ chart_data|json_script:"dashboard-chart-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+<script src="{% static 'js/dashboard-charts.js' %}" defer></script>
+{% endblock %}

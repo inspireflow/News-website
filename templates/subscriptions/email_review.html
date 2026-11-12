@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Review subscription | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription.css' %}">{% endblock %}
+
+{% block content %}
+<section class="subscription-page">
+    <div class="subscription-heading">
+        <span class="subscription-kicker">SUBSCRIPTION REVIEW</span>
+        <h1>{% if action == "approve" %}Approve request{% else %}Reject request{% endif %}</h1>
+    </div>
+    {% if result_message %}<div class="subscription-messages" role="status"><p>{{ result_message }}</p></div>{% endif %}
+    {% if review_state == "pending" %}
+    <article class="subscription-card">
+        <h2>{{ subscription.plan_name }}</h2>
+        <p>Name: {{ subscription.full_name|default:subscription.user.get_full_name|default:subscription.user.username }}</p>
+        <p>Email: {{ subscription.email|default:subscription.user.email }}</p>
+        <p>Price: {{ subscription.price|floatformat:2 }}{% if subscription.currency %} {{ subscription.currency }}{% endif %}</p>
+        <p>Duration: {{ subscription.duration_days }} days</p>
+        <p>Payment mode: {{ subscription.get_payment_mode_display }}</p>
+        <p>Request date: {{ subscription.requested_at|date:"d M Y H:i" }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class="subscription-button" type="submit">Confirm {{ action }}</button>
+        </form>
+    </article>
+    {% elif review_state == "complete" %}
+    <p>The request has been {{ action }}.</p>
+    {% elif review_state == "processed" %}
+    <p>This subscription request has already been processed.</p>
+    {% elif review_state == "expired" %}
+    <p>This review link has expired. Please review the request from the dashboard.</p>
+    {% else %}
+    <p>This review link is invalid.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Subscriptions{% endblock %}
+{% block breadcrumb %}Subscriptions{% endblock %}
+{% block heading %}Subscription Management{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription-dashboard.css' %}">{% endblock %}
+
+{% block content %}
+<section class="stat-grid subscription-dashboard-stats">
+    <article class="stat-card"><span class="stat-label">Total requests</span><strong>{{ counts.total }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Pending</span><strong>{{ counts.pending }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Active</span><strong>{{ counts.active }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Rejected</span><strong>{{ counts.rejected }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Cancelled</span><strong>{{ counts.cancelled }}</strong></article>
+    <article class="stat-card"><span class="stat-label">Expired</span><strong>{{ counts.expired }}</strong></article>
+</section>
+
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Subscription requests</h2>
+            <p>Review requests and their manual verification status.</p>
+        </div>
+        <a class="btn secondary" href="{% url 'dashboard:subscription_plans' %}">Manage plans</a>
+    </div>
+    <form method="get" class="filter-form">
+        <label class="sr-only" for="subscription-search">Search subscribers</label>
+        <input id="subscription-search" type="search" name="q" value="{{ query }}" placeholder="Search name or email">
+        <label class="sr-only" for="subscription-status">Filter status</label>
+        <select id="subscription-status" name="status">
+            <option value="">All statuses</option>
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <label class="sr-only" for="subscription-plan">Filter plan</label>
+        <select id="subscription-plan" name="plan">
+            <option value="">All plans</option>
+            {% for plan in plans %}
+            <option value="{{ plan.pk }}" {% if selected_plan == plan.pk|stringformat:"s" %}selected{% endif %}>{{ plan.name }}</option>
+            {% endfor %}
+        </select>
+        <button class="btn secondary" type="submit">Filter</button>
+    </form>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name / Email</th>
+                    <th>Plan</th>
+                    <th>Payment mode</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th>Starts</th>
+                    <th>Expires</th>
+                    <th>Days remaining</th>
+                    <th>Reference</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subscription in subscriptions %}
+                <tr>
+                    <td>{{ subscription.full_name|default:subscription.user.get_full_name|default:subscription.user.username }}<br><small>{{ subscription.email|default:subscription.user.email }}</small></td>
+                    <td>{{ subscription.plan_name }}</td>
+                    <td>{{ subscription.get_payment_mode_display }}</td>
+                    <td>{{ subscription.requested_at|date:"d M Y H:i" }}</td>
+                    <td><span class="status {{ subscription.status }}">{{ subscription.get_status_display }}</span></td>
+                    <td>{{ subscription.starts_at|date:"d M Y"|default:"—" }}</td>
+                    <td>{{ subscription.expires_at|date:"d M Y"|default:"—" }}</td>
+                    <td>{{ subscription.days_remaining_text }}</td>
+                    <td>{{ subscription.payment_reference|default:"—" }}</td>
+                    <td><a class="btn secondary" href="{% url 'dashboard:subscription_detail' subscription.pk %}">Details</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="10">No subscription requests match these filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if page_obj.has_other_pages %}
+    <nav class="table-pagination" aria-label="Subscription pages">
+        {% if page_obj.has_previous %}
+        <a href="?q={{ query|urlencode }}&amp;status={{ status|urlencode }}&amp;plan={{ selected_plan|urlencode }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?q={{ query|urlencode }}&amp;status={{ status|urlencode }}&amp;plan={{ selected_plan|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+{% endblock %}

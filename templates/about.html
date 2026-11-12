@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}About Us | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+
+{% block description %}
+Learn about {{ site_settings.site_name|default:"NewsPortal" }}, our editorial mission and commitment to clear, timely
+and responsible reporting.
+{% endblock %}
+
+{% block content %}
+
+<!-- About page introduction -->
+<section class="about-hero">
+    <div class="about-breadcrumb">
+        <a href="{% url 'home' %}">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>About Us</span>
+    </div>
+
+    <div class="about-hero-content">
+        <div class="about-hero-copy">
+            <span class="editorial-kicker">WHO WE ARE</span>
+
+            <h1>
+                News that matters.
+                <span>Perspective that lasts.</span>
+            </h1>
+
+            <p class="about-intro">
+                {{ site_settings.site_name|default:"NewsPortal" }} brings
+                readers news, updates and perspectives across different
+                categories, helping them stay informed about the stories
+                shaping their world.
+            </p>
+        </div>
+
+        <div class="about-hero-visual" aria-hidden="true">
+            <div class="about-visual-frame">
+                <span class="about-visual-top">THE NEWSROOM</span>
+                <span class="about-visual-symbol">N<span>.</span></span>
+                <span class="about-visual-bottom">FACTS FIRST. ALWAYS.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-hero-footer">
+        <span>OUR MISSION</span>
+        <span>INFORM · EXPLAIN · CONNECT</span>
+    </div>
+</section>
+
+
+<!-- Editorial mission -->
+<section class="about-mission editorial-section">
+    <div class="about-section-label">
+        <span class="editorial-kicker">WHY WE EXIST</span>
+        <span class="editorial-heading-mark" aria-hidden="true">/</span>
+    </div>
+
+    <div class="about-mission-content">
+        <h2>
+            Helping readers understand
+            <span>what is happening — and why.</span>
+        </h2>
+
+        <div class="about-mission-copy">
+            <p>
+                Our goal is to provide clear, timely and responsible reporting.
+                We believe news should be accessible, thoughtfully presented
+                and useful to the people who read it.
+            </p>
+
+            <p>
+                Our editorial team publishes stories across different
+                categories, giving readers a straightforward way to discover
+                developments, explore topics and stay up to date.
+            </p>
+        </div>
+    </div>
+</section>
+
+
+<!-- Editorial principles -->
+<section class="about-principles">
+    <div class="editorial-heading">
+        <div class="editorial-heading-main">
+            <span class="editorial-kicker">OUR APPROACH</span>
+            <h2>Principles behind our work.</h2>
+        </div>
+
+        <span class="editorial-heading-mark" aria-hidden="true">/</span>
+    </div>
+
+    <div class="principles-grid">
+        <article class="principle-card">
+            <span class="principle-number">01</span>
+            <h3>Clarity</h3>
+            <p>
+                We aim to present information in a clear, readable format
+                that helps readers understand the story.
+            </p>
+        </article>
+
+        <article class="principle-card">
+            <span class="principle-number">02</span>
+            <h3>Timeliness</h3>
+            <p>
+                We bring published updates and stories together so readers
+                can follow developments as they emerge.
+            </p>
+        </article>
+
+        <article class="principle-card">
+            <span class="principle-number">03</span>
+            <h3>Responsibility</h3>
+            <p>
+                We value thoughtful reporting and the importance of
+                presenting news responsibly.
+            </p>
+        </article>
+    </div>
+</section>
+
+
+<!-- Contact section -->
+<section class="about-contact">
+    <div class="about-contact-copy">
+        <span class="editorial-kicker">LET'S CONNECT</span>
+        <h2>Have a question or a story to share?</h2>
+        <p>
+            We welcome enquiries from readers who want to get in touch
+            with our team.
+        </p>
+    </div>
+
+    <div class="about-contact-action">
+        {% if site_settings.contact_email %}
+        <span class="contact-label">CONTACT OUR TEAM</span>
+
+        <a class="about-contact-email" href="mailto:{{ site_settings.contact_email }}">
+            {{ site_settings.contact_email }}
+            <span aria-hidden="true">↗</span>
+        </a>
+        {% else %}
+        <a class="story-read-link" href="{% url 'home' %}">
+            <span>Explore the latest news</span>
+            <span class="story-arrow" aria-hidden="true">↗</span>
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

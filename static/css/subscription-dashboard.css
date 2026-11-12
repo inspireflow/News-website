@@ -1,0 +1,75 @@
+.subscription-dashboard-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.subscription-dashboard-stats .stat-card {
+  min-height: 116px;
+}
+.subscription-dashboard-stats .stat-card strong {
+  margin-top: 9px;
+}
+.subscription-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+.subscription-detail-grid p {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.subscription-detail-grid strong {
+  color: var(--text-heading);
+}
+.subscription-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  margin-top: 24px;
+}
+.subscription-admin-actions form {
+  display: grid;
+  gap: 8px;
+  min-width: min(100%, 260px);
+  margin: 0;
+}
+.subscription-admin-actions textarea {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+.subscription-admin-actions label {
+  color: var(--text-body);
+  font-size: 12px;
+  font-weight: 650;
+}
+.dashboard-body .status.pending {
+  color: var(--dash-warning-ink);
+  background: var(--dash-warning-soft);
+}
+.dashboard-body .status.active {
+  color: var(--dash-success-ink);
+  background: var(--dash-success-soft);
+}
+.dashboard-body .status.rejected,
+.dashboard-body .status.cancelled,
+.dashboard-body .status.expired {
+  color: var(--dash-error-ink);
+  background: var(--dash-error-soft);
+}
+@media (max-width: 800px) {
+  .subscription-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .subscription-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .subscription-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,0 +1,59 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}{{ heading }}{% endblock %}
+{% block breadcrumb %}{{ heading }}{% endblock %}
+{% block heading %}{{ heading }}{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+    <div class="panel-heading">
+        <div>
+            <h2>{{ heading }}</h2>
+            <p>Fill in the article details below.</p>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="dashboard-form">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+
+        {% for field in form %}
+        <div class="form-field">
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}{% if field.field.required %} <span class="required-indicator" aria-hidden="true">*</span><span class="sr-only"> required</span>{% endif %}
+            </label>
+            {% if field.name == "image" %}
+            <div class="image-upload-field" data-image-upload>
+                {% if post.image %}
+                <figure class="upload-preview">
+                    <img src="{{ post.image.url }}" alt="Current image for {{ post.title }}">
+                    <figcaption>Current article image</figcaption>
+                </figure>
+                {% endif %}
+                <label class="image-drop-zone" for="{{ field.id_for_label }}">
+                    <span class="image-drop-icon" aria-hidden="true">↑</span>
+                    <strong>Drop an image here or browse</strong>
+                    <span>Choose a clear JPG, PNG or WebP image for the story.</span>
+                    {{ field }}
+                </label>
+                <figure class="upload-preview upload-preview-new" data-image-preview hidden>
+                    <img alt="Selected article image preview">
+                    <figcaption data-image-name></figcaption>
+                </figure>
+            </div>
+            {% else %}
+            {{ field }}
+            {% endif %}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {{ field.errors }}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">Save News</button>
+            <a href="{% url 'dashboard:posts' %}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

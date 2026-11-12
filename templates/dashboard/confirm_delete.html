@@ -1,0 +1,21 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Confirm Delete{% endblock %}
+{% block breadcrumb %}Confirm Delete{% endblock %}
+{% block heading %}Confirm Delete{% endblock %}
+
+{% block content %}
+<section class="panel form-panel">
+    <h2>Are you sure?</h2>
+    <p>You are about to delete: <strong>{{ object }}</strong></p>
+    <p>This action cannot be undone.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn danger">Yes, Delete</button>
+            <a href="{% url cancel_url %}" class="btn secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

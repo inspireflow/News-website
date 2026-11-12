@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ category.name }} News | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+
+{% block content %}
+
+<!-- Category page masthead -->
+<section class="category-masthead">
+    <div class="category-breadcrumb">
+        <a href="{% url 'home' %}">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ category.name }}</span>
+    </div>
+
+    <div class="category-masthead-content">
+        <div class="category-masthead-copy">
+            <span class="editorial-kicker">EXPLORE OUR COVERAGE</span>
+
+            <h1>{{ category.name }} <span>News</span></h1>
+
+            {% if category.description %}
+            <p>{{ category.description }}</p>
+            {% else %}
+            <p>
+                The latest stories, updates and perspectives from
+                {{ category.name }}.
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="category-masthead-mark" aria-hidden="true">
+            <span>/</span>
+        </div>
+    </div>
+
+    <div class="category-masthead-bottom">
+        <span>NEWS &amp; ANALYSIS</span>
+        <span>{% now "d M Y" %}</span>
+    </div>
+</section>
+
+
+<!-- Category articles -->
+<section class="editorial-section category-articles">
+    <div class="editorial-heading">
+        <div class="editorial-heading-main">
+            <span class="editorial-kicker">THE LATEST COVERAGE</span>
+            <h2>Latest {{ category.name }} Stories</h2>
+        </div>
+
+        <span class="editorial-heading-mark" aria-hidden="true">/</span>
+    </div>
+
+    <div class="editorial-grid category-grid">
+        {% for post in posts %}
+        <article class="editorial-card">
+
+            <a class="editorial-card-image" href="{% url 'article' post.slug %}" aria-label="Read {{ post.title }}">
+
+                {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" loading="lazy">
+                {% else %}
+                <div class="image-placeholder">
+                    <span>NEWS</span>
+                </div>
+                {% endif %}
+            </a>
+
+            <div class="editorial-card-content">
+                <span class="story-category">
+                    {{ category.name }}
+                </span>
+
+                <h3 class="editorial-card-title">
+                    <a href="{% url 'article' post.slug %}">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+                {% if post.summary %}
+                <p class="editorial-card-summary">
+                    {{ post.summary|truncatewords:24 }}
+                </p>
+                {% endif %}
+
+                <div class="story-meta">
+                    <span>
+                        By {{ post.author|default:"Editorial Team" }}
+                    </span>
+
+                    <time datetime="{{ post.created_at|date:'c' }}">
+                        {{ post.created_at|date:"d M Y" }}
+                    </time>
+                </div>
+
+                <a class="story-read-link" href="{% url 'article' post.slug %}">
+                    <span>Read story</span>
+                    <span class="story-arrow" aria-hidden="true">↗</span>
+                </a>
+            </div>
+
+        </article>
+        {% empty %}
+        <div class="news-empty-state">
+            <span class="news-empty-mark">/</span>
+            <h3>No stories published yet.</h3>
+            <p>
+                There are no published articles in this category right now.
+                Please check back soon.
+            </p>
+
+            <a class="story-read-link" href="{% url 'home' %}">
+                <span>Explore latest news</span>
+                <span class="story-arrow" aria-hidden="true">↗</span>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="Category story pages">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+
+{% endblock %}

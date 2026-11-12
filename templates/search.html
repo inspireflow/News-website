@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Search{% if query %}: {{ query }}{% endif %} | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+{% block description %}Search published news stories from {{ site_settings.site_name|default:"NewsPortal" }}.{% endblock %}
+
+{% block content %}
+<section class="search-page">
+    <div class="search-page-heading">
+        <span class="editorial-kicker">NEWSROOM ARCHIVE</span>
+        <h1>Search stories</h1>
+        {% if query %}
+        <p>Results for <strong>{{ query }}</strong></p>
+        {% else %}
+        <p>Enter a topic, headline or category to explore published coverage.</p>
+        {% endif %}
+    </div>
+
+    {% if query %}
+    <div class="editorial-grid search-results-grid">
+        {% for post in posts %}
+        <article class="editorial-card">
+            <a class="editorial-card-image" href="{% url 'article' post.slug %}" aria-label="Read {{ post.title }}">
+                {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" loading="lazy">
+                {% else %}
+                <div class="image-placeholder"><span>NEWS</span></div>
+                {% endif %}
+            </a>
+            <div class="editorial-card-content">
+                <a class="story-category" href="{% url 'category' post.category.slug %}">{{ post.category.name }}</a>
+                <h2 class="editorial-card-title">
+                    <a href="{% url 'article' post.slug %}">{{ post.title }}</a>
+                </h2>
+                <p class="editorial-card-summary">{{ post.summary|truncatewords:22 }}</p>
+                <div class="story-meta">
+                    <span>By {{ post.author }}</span>
+                    <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"d M Y" }}</time>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="news-empty-state">
+            <span class="news-empty-mark" aria-hidden="true">/</span>
+            <h2>No matching stories</h2>
+            <p>Try a different title, topic or category.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="Search result pages">
+        {% if page_obj.has_previous %}
+        <a href="?q={{ query|urlencode }}&amp;page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?q={{ query|urlencode }}&amp;page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

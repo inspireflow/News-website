@@ -1,0 +1,42 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Categories{% endblock %}
+{% block breadcrumb %}Categories{% endblock %}
+{% block heading %}Category Management{% endblock %}
+
+{% block content %}
+<div class="dashboard-columns">
+    <section class="panel">
+        <h2>Add Category</h2>
+        <form method="post" action="{% url 'dashboard:category_create' %}" class="dashboard-form">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {{ field.errors }}
+            </div>
+            {% endfor %}
+            <button class="btn primary" type="submit">Save Category</button>
+        </form>
+    </section>
+
+    <section class="panel existing-categories-list">
+        <h2>Existing Categories</h2>
+        {% for category in categories %}
+        <div class="list-row category-list-row">
+            <div>
+                <strong>{{ category.name }}</strong>
+                <small>{{ category.slug }} · {% if category.is_active %}Active{% else %}Hidden{% endif %}</small>
+            </div>
+            <div class="actions category-actions">
+                <a class="action-button action-edit" href="{% url 'dashboard:category_edit' category.pk %}">Edit</a>
+                <a class="action-button action-delete" href="{% url 'dashboard:category_delete' category.pk %}">Delete</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No categories created yet.</p>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

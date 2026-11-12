@@ -1,0 +1,184 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Dashboard{% endblock %} | NewsWeb</title>
+    <script>
+        (() => {
+            const themes = new Set(["cream-orange", "ocean-blue", "soft-orange", "mint-teal", "lavender-rose", "midnight-glass"]);
+            try {
+                const preferences = JSON.parse(localStorage.getItem("newswebDashboardAppearance") || "{}");
+                const theme = themes.has(preferences.theme) ? preferences.theme : "cream-orange";
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.dataset.background = preferences.background === false ? "off" : "on";
+                document.documentElement.dataset.glassMode = preferences.mode === "dark"
+                    || (!["light", "dark"].includes(preferences.mode) && theme === "midnight-glass") ? "dark" : "light";
+                document.documentElement.dataset.glassBlur = ["low", "medium", "high"].includes(preferences.blur) ? preferences.blur : "medium";
+            } catch (error) {
+                console.warn("The saved dashboard theme could not be read before first paint.", error);
+                document.documentElement.dataset.theme = "cream-orange";
+                document.documentElement.dataset.background = "on";
+                document.documentElement.dataset.glassMode = "light";
+                document.documentElement.dataset.glassBlur = "medium";
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=20261017-2">
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="dashboard-body">
+    <div class="dashboard-scene" aria-hidden="true">
+        <div class="dashboard-aurora"></div>
+        {% for orb in "12345678" %}
+        <span class="orb orb-{{ forloop.counter }}"></span>
+        {% endfor %}
+        {% for particle in "123456789012345678901234567890123456789012345678" %}
+        <span class="scene-particle" style="--particle-index: {{ forloop.counter }}"></span>
+        {% endfor %}
+    </div>
+    <aside class="sidebar" id="dashboard-sidebar" aria-label="Dashboard navigation">
+        <a class="dashboard-brand" href="{% url 'dashboard:overview' %}">
+            NEWS<span>WEB</span>
+        </a>
+
+        <p class="sidebar-label">WORKSPACE</p>
+
+        {% with current=request.resolver_match.view_name %}
+        <nav class="sidebar-nav">
+            <a data-label="Overview" href="{% url 'dashboard:overview' %}" {% if current == "dashboard:overview" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">◈</span><span class="nav-label">Overview</span></a>
+            <a data-label="News Posts" href="{% url 'dashboard:posts' %}" {% if current == "dashboard:posts" or current == "dashboard:post_create" or current == "dashboard:post_edit" or current == "dashboard:post_delete" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">▤</span><span class="nav-label">News Posts</span></a>
+            <a data-label="Analytics" href="{% url 'dashboard:analytics' %}" {% if current == "dashboard:analytics" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">▥</span><span class="nav-label">Analytics</span></a>
+            <a data-label="Categories" href="{% url 'dashboard:categories' %}" {% if current == "dashboard:categories" or current == "dashboard:category_create" or current == "dashboard:category_edit" or current == "dashboard:category_delete" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">◉</span><span class="nav-label">Categories</span></a>
+            <a data-label="Homepage Sections" href="{% url 'dashboard:sections' %}" {% if current == "dashboard:sections" or current == "dashboard:section_create" or current == "dashboard:section_edit" or current == "dashboard:section_delete" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">▦</span><span class="nav-label">Homepage Sections</span></a>
+            <a data-label="Subscriptions" href="{% url 'dashboard:subscriptions' %}" {% if current == "dashboard:subscriptions" or current == "dashboard:subscription_detail" or current == "dashboard:subscription_action" or current == "dashboard:subscription_email_retry" or current == "dashboard:subscription_plans" or current == "dashboard:subscription_plan_create" or current == "dashboard:subscription_plan_edit" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">◆</span><span class="nav-label">Subscriptions</span></a>
+            <a data-label="Website Settings" href="{% url 'dashboard:settings' %}" {% if current == "dashboard:settings" %}class="active" aria-current="page"{% endif %}><span class="nav-icon" aria-hidden="true">⚙</span><span class="nav-label">Website Settings</span></a>
+            <a data-label="View Website" href="{% url 'home' %}" target="_blank" rel="noopener"><span class="nav-icon" aria-hidden="true">↗</span><span class="nav-label">View Website</span></a>
+        </nav>
+        {% endwith %}
+
+        <div class="sidebar-bottom">
+            <div class="sidebar-user">
+                <span class="sidebar-avatar" aria-hidden="true">{{ request.user.username|slice:":1"|upper }}</span>
+                <span class="sidebar-username">{{ request.user.username }}</span>
+            </div>
+            <form method="post" action="{% url 'dashboard:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-button btn-glossy danger"><span aria-hidden="true">↪</span><span>Log Out</span></button>
+            </form>
+        </div>
+    </aside>
+
+    <button class="sidebar-overlay" type="button" aria-label="Close navigation menu" hidden></button>
+
+    <main class="dashboard-main">
+        <header class="topbar">
+            <div>
+                <button class="dashboard-menu-toggle" type="button" aria-expanded="false"
+                    aria-controls="dashboard-sidebar" aria-label="Toggle dashboard navigation">
+                    <span aria-hidden="true">☰</span>
+                </button>
+                <nav class="dashboard-breadcrumb" aria-label="Breadcrumb">
+                    <a href="{% url 'dashboard:overview' %}">Dashboard</a>
+                    <span aria-hidden="true">/</span>
+                    <span>{% block breadcrumb %}Overview{% endblock %}</span>
+                </nav>
+                <span class="eyebrow">NEWSWEB CONTROL PANEL</span>
+                <h1>{% block heading %}Overview{% endblock %}</h1>
+            </div>
+            <div class="topbar-actions">
+                <form class="topbar-search" method="get" action="{% url 'dashboard:posts' %}" role="search">
+                    <label class="sr-only" for="dashboard-post-search">Search news posts</label>
+                    <input id="dashboard-post-search" name="q" type="search" placeholder="Search articles…"
+                        value="{{ request.GET.q }}">
+                    <button class="search-toggle icon-button" type="submit" aria-label="Search articles">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg>
+                    </button>
+                </form>
+                <div class="menu-anchor">
+                    <button class="icon-button notification-toggle" type="button" aria-expanded="false"
+                        aria-label="Notifications" aria-controls="notification-menu">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>
+                        {% if messages %}<span class="notification-badge" aria-hidden="true">{{ messages|length }}</span>{% endif %}
+                    </button>
+                    <div class="floating-menu notification-menu" id="notification-menu" hidden>
+                        <strong>Notifications</strong>
+                        {% for message in messages %}<p>{{ message }}</p>{% empty %}
+                        <p>You’re all caught up.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="menu-anchor">
+                    <button class="profile-toggle" type="button" aria-expanded="false" aria-controls="profile-menu">
+                        <span class="topbar-avatar" aria-hidden="true">{{ request.user.username|slice:":1"|upper }}</span>
+                        <span class="profile-name">{{ request.user.username }}</span><span aria-hidden="true">⌄</span>
+                    </button>
+                    <div class="floating-menu profile-menu" id="profile-menu" hidden>
+                        <strong>{{ request.user.username }}</strong>
+                        <a href="{% url 'dashboard:settings' %}">Website settings</a>
+                        <form method="post" action="{% url 'dashboard:logout' %}">
+                            {% csrf_token %}<button type="submit" class="logout-menu-button">Log out</button>
+                        </form>
+                    </div>
+                </div>
+                <a href="{% url 'dashboard:post_create' %}" class="btn-glossy primary topbar-create" aria-label="New article">
+                    <span class="create-icon" aria-hidden="true">+</span><span class="create-label">New article</span>
+                </a>
+                <a href="{% url 'home' %}" target="_blank" rel="noopener" class="btn secondary topbar-website">
+                    <span class="website-icon" aria-hidden="true">↗</span><span class="website-label">View website</span>
+                </a>
+                <button class="icon-button customizer-toggle" type="button" aria-expanded="false"
+                    aria-controls="theme-customizer" aria-label="Open appearance settings">⚙</button>
+            </div>
+        </header>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert {{ message.tags }}" role="status">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+    {% if request.resolver_match.view_name != "dashboard:post_create" %}
+    <a href="{% url 'dashboard:post_create' %}" class="dashboard-fab" aria-label="Create a new article">
+        <span aria-hidden="true">+</span><span class="fab-label">New article</span>
+    </a>
+    {% endif %}
+    <button class="customizer-overlay" type="button" aria-label="Close appearance settings" hidden></button>
+    <aside class="customizer-drawer" id="theme-customizer" aria-label="Dashboard appearance settings" aria-hidden="true">
+        <div class="drawer-heading"><div><span class="eyebrow">PERSONALIZE</span><h2>Appearance</h2></div>
+            <button class="icon-button customizer-close" type="button" aria-label="Close appearance settings">×</button>
+        </div>
+        <fieldset class="customizer-section"><legend>Accent palette</legend>
+            <div class="theme-options">
+                <button type="button" data-theme-choice="cream-orange"><span class="palette-swatch"><i></i><i></i><i></i></span><span>Cream Orange &amp; Blue</span></button>
+                <button type="button" data-theme-choice="ocean-blue"><span class="palette-swatch"><i></i><i></i><i></i></span><span>Ocean Blue &amp; Sky</span></button>
+                <button type="button" data-theme-choice="soft-orange"><span class="palette-swatch"><i></i><i></i><i></i></span><span>Soft Orange &amp; Peach</span></button>
+                <button type="button" data-theme-choice="mint-teal"><span class="palette-swatch"><i></i><i></i><i></i></span><span>Mint &amp; Teal</span></button>
+                <button type="button" data-theme-choice="lavender-rose"><span class="palette-swatch"><i></i><i></i><i></i></span><span>Lavender &amp; Rose</span></button>
+                <button type="button" data-theme-choice="midnight-glass"><span class="palette-swatch"><i></i><i></i><i></i></span><span>Midnight Glass</span></button>
+            </div>
+        </fieldset>
+        <label class="customizer-row" for="animated-background"><span>Animated background</span>
+            <input id="animated-background" type="checkbox" checked></label>
+        <label class="customizer-row" for="glass-blur"><span>Glass blur</span>
+            <select id="glass-blur"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label>
+        <label class="customizer-row" for="layout-density"><span>Layout density</span>
+            <select id="layout-density"><option value="comfortable" selected>Comfortable</option><option value="compact">Compact</option></select></label>
+        <label class="customizer-row" for="glass-mode"><span>Glass appearance</span>
+            <select id="glass-mode"><option value="light" selected>Light glass</option><option value="dark">Dark glass</option></select></label>
+        <p class="drawer-note">Preferences are saved on this device.</p>
+    </aside>
+    {% block extra_scripts %}{% endblock %}
+    <script src="{% static 'js/dashboard.js' %}" defer></script>
+</body>
+
+</html>

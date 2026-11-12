@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Login</title>
+    <script>
+        (() => {
+            const themes = new Set(["cream-orange", "ocean-blue", "soft-orange", "mint-teal", "lavender-rose", "midnight-glass"]);
+            try {
+                const preferences = JSON.parse(localStorage.getItem("newswebDashboardAppearance") || "{}");
+                const theme = themes.has(preferences.theme) ? preferences.theme : "cream-orange";
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.dataset.background = preferences.background === false ? "off" : "on";
+                document.documentElement.dataset.glassMode = preferences.mode === "dark"
+                    || (!["light", "dark"].includes(preferences.mode) && theme === "midnight-glass") ? "dark" : "light";
+                document.documentElement.dataset.glassBlur = ["low", "medium", "high"].includes(preferences.blur) ? preferences.blur : "medium";
+            } catch (error) {
+                console.warn("The saved dashboard theme could not be read before first paint.", error);
+                document.documentElement.dataset.theme = "cream-orange";
+                document.documentElement.dataset.background = "on";
+                document.documentElement.dataset.glassMode = "light";
+                document.documentElement.dataset.glassBlur = "medium";
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+
+<body class="login-page">
+    <div class="dashboard-scene login-scene" aria-hidden="true">
+        <span class="orb orb-1"></span><span class="orb orb-2"></span>
+        <span class="orb orb-3"></span><span class="orb orb-4"></span>
+        <span class="orb orb-5"></span><span class="orb orb-6"></span>
+        <span class="orb orb-7"></span><span class="orb orb-8"></span>
+    </div>
+    <main class="login-card">
+        <div class="login-theme-switcher" role="group" aria-label="Choose dashboard color theme">
+            <button type="button" data-login-theme="cream-orange" aria-label="Cream Orange and Blue" title="Cream Orange &amp; Blue"><i></i></button>
+            <button type="button" data-login-theme="ocean-blue" aria-label="Ocean Blue and Sky" title="Ocean Blue &amp; Sky"><i></i></button>
+            <button type="button" data-login-theme="soft-orange" aria-label="Soft Orange and Peach" title="Soft Orange &amp; Peach"><i></i></button>
+            <button type="button" data-login-theme="mint-teal" aria-label="Mint and Teal" title="Mint &amp; Teal"><i></i></button>
+            <button type="button" data-login-theme="lavender-rose" aria-label="Lavender and Rose" title="Lavender &amp; Rose"><i></i></button>
+            <button type="button" data-login-theme="midnight-glass" aria-label="Midnight Glass" title="Midnight Glass"><i></i></button>
+        </div>
+        <div class="login-logo">NEWS<span>WEB</span></div>
+        <h1>Admin Login</h1>
+        <p>Sign in to manage your news website.</p>
+
+        {% if error %}
+        <div class="alert error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" autocomplete="username" required autofocus>
+
+            <label for="password">Password</label>
+            <div class="password-field">
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+                <button class="password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+            </div>
+
+            <button type="submit" class="btn primary full btn-glossy">
+                Login to Dashboard
+            </button>
+        </form>
+
+        <a class="back-link" href="{% url 'home' %}">← Back to website</a>
+    </main>
+    <script>
+        (() => {
+            const themes = new Set(["cream-orange", "ocean-blue", "soft-orange", "mint-teal", "lavender-rose", "midnight-glass"]);
+            const root = document.documentElement;
+            const themeButtons = [...document.querySelectorAll("[data-login-theme]")];
+            const syncThemeButtons = () => {
+                for (const button of themeButtons) {
+                    button.setAttribute("aria-pressed", String(button.dataset.loginTheme === root.dataset.theme));
+                }
+            };
+            for (const button of themeButtons) {
+                button.addEventListener("click", () => {
+                    const theme = button.dataset.loginTheme;
+                    if (!themes.has(theme)) return;
+                    root.dataset.theme = theme;
+                    if (theme === "midnight-glass") root.dataset.glassMode = "dark";
+                    try {
+                        const preferences = JSON.parse(localStorage.getItem("newswebDashboardAppearance") || "{}");
+                        preferences.theme = theme;
+                        if (theme === "midnight-glass") preferences.mode = "dark";
+                        localStorage.setItem("newswebDashboardAppearance", JSON.stringify(preferences));
+                        root.dataset.glassMode = preferences.mode === "dark" ? "dark" : "light";
+                    } catch (error) {
+                        console.error("The dashboard appearance preference could not be saved.", error);
+                    }
+                    syncThemeButtons();
+                });
+            }
+            syncThemeButtons();
+
+            const password = document.querySelector("#password");
+            const passwordToggle = document.querySelector("[data-password-toggle]");
+            passwordToggle?.addEventListener("click", () => {
+                if (!password) return;
+                const visible = password.type === "password";
+                password.type = visible ? "text" : "password";
+                passwordToggle.setAttribute("aria-pressed", String(visible));
+                passwordToggle.setAttribute("aria-label", visible ? "Hide password" : "Show password");
+            });
+        })();
+    </script>
+</body>
+
+</html>

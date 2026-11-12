@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Latest News | {{ site_settings.site_name|default:"NewsPortal" }}{% endblock %}
+
+{% block content %}
+
+<!-- Breaking news strip -->
+<section class="breaking-strip" aria-label="Latest updates">
+    <div class="breaking-label">
+        <span class="breaking-live-dot"></span>
+        <span>TOP STORIES</span>
+    </div>
+
+    <div class="breaking-content">
+        <span>Stay informed. Stay ahead.</span>
+        <span class="breaking-divider">/</span>
+        <span>Latest news, updates and perspectives</span>
+    </div>
+
+    <span class="breaking-date">{% now "D, d M Y" %}</span>
+</section>
+
+
+<!-- Featured lead story -->
+{% if featured %}
+<section class="lead-story">
+    <div class="lead-story-image">
+        <a href="{% url 'article' featured.slug %}" aria-label="Read {{ featured.title }}">
+
+            {% if featured.image %}
+            <img src="{{ featured.image.url }}" alt="{{ featured.title }}" fetchpriority="high">
+            {% else %}
+            <div class="image-placeholder">
+                <span>THE LEAD STORY</span>
+            </div>
+            {% endif %}
+        </a>
+
+        <span class="lead-image-caption">
+            EDITOR'S SPOTLIGHT
+        </span>
+    </div>
+
+    <div class="lead-story-content">
+        <div class="story-overline">
+            <span class="story-overline-line"></span>
+            <span>THE BIG STORY</span>
+        </div>
+
+        <a class="story-category" href="{% url 'category' featured.category.slug %}">
+            {{ featured.category.name }}
+        </a>
+
+        <h1 class="lead-headline">
+            <a href="{% url 'article' featured.slug %}">
+                {{ featured.title }}
+            </a>
+        </h1>
+
+        {% if featured.summary %}
+        <p class="lead-summary">
+            {{ featured.summary }}
+        </p>
+        {% endif %}
+
+        <div class="story-meta">
+            <span>By {{ featured.author|default:"Editorial Team" }}</span>
+            <time datetime="{{ featured.created_at|date:'c' }}">
+                {{ featured.created_at|date:"d M Y" }}
+            </time>
+        </div>
+
+        <a class="story-read-link" href="{% url 'article' featured.slug %}">
+            <span>Read full story</span>
+            <span class="story-arrow" aria-hidden="true">↗</span>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- Editorial section feeds -->
+{% for section in sections %}
+{% with section_posts=section.visible_posts %}
+{% if section_posts %}
+<section class="editorial-section">
+    <div class="editorial-heading">
+        <div class="editorial-heading-main">
+            <span class="editorial-kicker">
+                FROM THE NEWSROOM
+            </span>
+            <h2>{{ section.title }}</h2>
+        </div>
+
+        <span class="editorial-heading-mark" aria-hidden="true">/</span>
+    </div>
+
+    <div class="editorial-grid">
+        {% for post in section_posts %}
+        <article class="editorial-card">
+
+            <a class="editorial-card-image" href="{% url 'article' post.slug %}" aria-label="Read {{ post.title }}">
+
+                {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" loading="lazy">
+                {% else %}
+                <div class="image-placeholder">
+                    <span>NEWS</span>
+                </div>
+                {% endif %}
+            </a>
+
+            <div class="editorial-card-content">
+                <a class="story-category" href="{% url 'category' post.category.slug %}">
+                    {{ post.category.name }}
+                </a>
+
+                <h3 class="editorial-card-title">
+                    <a href="{% url 'article' post.slug %}">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+                {% if post.summary %}
+                <p class="editorial-card-summary">
+                    {{ post.summary|truncatewords:22 }}
+                </p>
+                {% endif %}
+
+                <div class="story-meta">
+                    <time datetime="{{ post.created_at|date:'c' }}">
+                        {{ post.created_at|date:"d M Y" }}
+                    </time>
+                </div>
+            </div>
+
+        </article>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endwith %}
+{% endfor %}
+
+
+<!-- Latest stories -->
+<section class="editorial-section latest-section">
+    <div class="editorial-heading">
+        <div class="editorial-heading-main">
+            <span class="editorial-kicker">FRESH OFF THE DESK</span>
+            <h2>Latest News</h2>
+            <p class="editorial-subtitle">
+                The latest stories selected for you.
+            </p>
+        </div>
+
+        <span class="editorial-heading-mark" aria-hidden="true">/</span>
+    </div>
+
+    <div class="editorial-grid latest-grid">
+        {% for post in posts %}
+        {% if post.status == "published" and post.category.is_active %}
+        <article class="editorial-card">
+
+            <a class="editorial-card-image" href="{% url 'article' post.slug %}" aria-label="Read {{ post.title }}">
+
+                {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" loading="lazy">
+                {% else %}
+                <div class="image-placeholder">
+                    <span>NEWS</span>
+                </div>
+                {% endif %}
+            </a>
+
+            <div class="editorial-card-content">
+                <a class="story-category" href="{% url 'category' post.category.slug %}">
+                    {{ post.category.name }}
+                </a>
+
+                <h3 class="editorial-card-title">
+                    <a href="{% url 'article' post.slug %}">
+                        {{ post.title }}
+                    </a>
+                </h3>
+
+                {% if post.summary %}
+                <p class="editorial-card-summary">
+                    {{ post.summary|truncatewords:22 }}
+                </p>
+                {% endif %}
+
+                <div class="story-meta">
+                    <span>{{ post.author|default:"Editorial Team" }}</span>
+                    <time datetime="{{ post.created_at|date:'c' }}">
+                        {{ post.created_at|date:"d M Y" }}
+                    </time>
+                </div>
+            </div>
+
+        </article>
+        {% endif %}
+        {% empty %}
+        {% if not featured %}
+        <div class="news-empty-state">
+            <span class="news-empty-mark">/</span>
+            <h3>The newsroom is getting ready.</h3>
+            <p>Published stories will appear here as soon as they are available.</p>
+        </div>
+        {% else %}
+        <p class="empty-state">There are no other recent stories yet.</p>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <nav class="pagination" aria-label="News pages">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</section>
+
+{% endblock %}

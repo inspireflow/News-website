@@ -1,0 +1,41 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Subscription Plans{% endblock %}
+{% block breadcrumb %}Subscriptions / Plans{% endblock %}
+{% block heading %}Subscription Plans{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/subscription-dashboard.css' %}">{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="panel-heading">
+        <div>
+            <h2>Available plans</h2>
+            <p>Set pricing, currency, duration and availability. Existing requests retain their original price and duration.</p>
+        </div>
+        <a class="btn primary" href="{% url 'dashboard:subscription_plan_create' %}">Add plan</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Plan</th><th>Price</th><th>Duration</th><th>Status</th><th>Order</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for plan in plans %}
+                <tr>
+                    <td>{{ plan.name }}</td>
+                    <td>{{ plan.price|floatformat:2 }} {{ plan.currency }}</td>
+                    <td>{{ plan.duration_days }} days</td>
+                    <td>{% if plan.is_active %}Available{% else %}Hidden{% endif %}</td>
+                    <td>{{ plan.display_order }}</td>
+                    <td><a class="btn secondary" href="{% url 'dashboard:subscription_plan_edit' plan.pk %}">Edit</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No plans configured. Add a plan when its price and currency are confirmed.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p><a class="btn secondary" href="{% url 'dashboard:subscriptions' %}">Back to requests</a></p>
+</section>
+{% endblock %}

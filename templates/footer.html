@@ -1,0 +1,82 @@
+{% load static %}
+
+<footer class="site-footer">
+    <div class="footer-top-border"></div>
+
+    <div class="container footer-main">
+        <!-- Brand information -->
+        <div class="footer-brand">
+            <a href="{% url 'home' %}" class="footer-logo">
+                {% if site_settings and site_settings.logo %}
+                <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name|default:'NewsPortal' }}">
+                {% else %}
+                <span class="footer-brand-name">
+                    {{ site_settings.site_name|default:"NewsPortal" }}
+                </span>
+                {% endif %}
+            </a>
+
+            <p class="footer-tagline">
+                {{ site_settings.tagline|default:"Your daily source for the latest news, stories and perspectives." }}
+            </p>
+
+            <span class="footer-editorial-note">
+                INFORMING MINDS. EVERY DAY.
+            </span>
+        </div>
+
+        <!-- Navigation -->
+        <div class="footer-column">
+            <h3 class="footer-heading">Explore</h3>
+
+            <a href="{% url 'home' %}" class="footer-link">Home</a>
+            <a href="{% url 'about' %}" class="footer-link">About Us</a>
+
+            {% for category in categories %}
+            <a href="{% url 'category' category.slug %}" class="footer-link">
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Contact information -->
+        <div class="footer-column footer-contact">
+            <h3 class="footer-heading">Get in Touch</h3>
+
+            {% if site_settings.contact_email %}
+            <p class="footer-contact-label">Email enquiries</p>
+
+            <a href="mailto:{{ site_settings.contact_email }}" class="footer-email">
+                {{ site_settings.contact_email }}
+            </a>
+            {% else %}
+            <p class="footer-contact-description">
+                Have a story or question? We'd love to hear from you.
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Back to top -->
+        <div class="footer-back-top">
+            <a href="#top" class="back-to-top">
+                <span>Back to top</span>
+                <span class="back-to-top-arrow" aria-hidden="true">↑</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Copyright bar -->
+    <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+            <p class="copyright">
+                © {% now "Y" %}
+                {{ site_settings.site_name|default:"NewsPortal" }}.
+                {{ site_settings.footer_text|default:"All rights reserved." }}
+            </p>
+
+            <span class="footer-bottom-label">
+                INDEPENDENT NEWS &amp; JOURNALISM
+            </span>
+        </div>
+    </div>
+</footer>
